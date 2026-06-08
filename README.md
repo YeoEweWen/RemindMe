@@ -12,28 +12,28 @@ Remind Me is a mobile reminder and task management application designed to help 
 Users can create tasks, assign priorities and due dates, and receive timely notifications to ensure important activities are not missed. The system intelligently highlights high-priority tasks and ensures they are displayed prominently. Additionally, the application supports multi-user collaboration, allowing users to share and manage reminders within groups, making it suitable for both personal productivity and team-based environments.
 
 ## Key Features
-1. Task Management (To-Do List)
+### Task Management (To-Do List)
 - Create, update, and delete tasks
 - Mark tasks as completed
 - View tasks in a structured list
 
-2. Smart Reminder Notifications
+### Smart Reminder Notifications
 - Schedule reminders for each task
 - Receive push notifications at the specified time
 - Keeps users consistently informed
 
-3. Due Date Alerts
+### Due Date Alerts
 - Assign due dates to tasks
 - Automatic reminders triggered a few hours before the deadline
 - Reduces the risk of missing important deadlines
 
-4. Priority-Based Sorting 
+### Priority-Based Sorting 
 - Assign priority levels (e.g., High, Medium, Low)
 - Tasks are automatically sorted based on priority
 - High-priority tasks appear at the top for immediate attention
 - Improves decision-making and task focus
 
-5. Task Grouping
+### Task Grouping
 - Organize tasks into categories or groups
 - Simplifies management of multiple tasks
 - Example: Work, Study, Personal
