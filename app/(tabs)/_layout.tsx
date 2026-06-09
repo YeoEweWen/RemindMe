@@ -16,9 +16,13 @@ export default function TabLayout() {
         name="add_tasks"
         options={{
           title: 'Add Task',
+          tabBarItemStyle: {
+            marginRight: -20, // Negative margin on the right pulls the boundary away from the center
+            marginLeft: 20,   // Positive margin on the left pushes the whole item right
+          },
           tabBarIcon: ({ focused }) => (
             <View style={styles.tabItem}>
-              <Ionicons name={focused ? "add-circle" : "add-circle-outline"} size={26} color={focused ? '#1E3A8A' : '#666'} />
+              <Ionicons name={focused ? "add-circle" : "add-circle-outline"} size={28} color={focused ? '#1E3A8A' : '#666'} />
               <Text style={[styles.label, focused && styles.labelActive]}>Add</Text>
             </View>
           ),
@@ -43,11 +47,16 @@ export default function TabLayout() {
       {/* LIST */}
       <Tabs.Screen
         name="tasks_list"
+        
         options={{
           title: 'List',
+          tabBarItemStyle: {
+            marginRight: 20, // Negative margin on the right pulls the boundary away from the center
+            marginLeft: -20,   // Positive margin on the left pushes the whole item right
+          },
           tabBarIcon: ({ focused }) => (
             <View style={styles.tabItem}>
-              <Ionicons name="list" size={26} color={focused ? '#1E3A8A' : '#666'} />
+              <Ionicons name="list" size={28} color={focused ? '#1E3A8A' : '#666'} />
               <Text style={[styles.label, focused && styles.labelActive]}>List</Text>
             </View>
           ),
@@ -59,7 +68,7 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: 80,
+    height: 70,
     paddingTop: 10,
     position: 'absolute',
     backgroundColor: 'white',
@@ -89,7 +98,7 @@ const styles = StyleSheet.create({
   centerWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 30,
   },
 
   centerButton: {
