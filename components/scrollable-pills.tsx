@@ -23,7 +23,8 @@ export default function ScrollablePills({
 }: ScrollablePillsProps) {
   return (
     <ScrollView 
-      horizontal 
+      horizontal
+      style={{flexGrow: 0}}
       showsHorizontalScrollIndicator={false} 
       contentContainerStyle={[styles.scrollContainer, containerStyle]}
     >

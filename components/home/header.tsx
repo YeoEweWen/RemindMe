@@ -1,10 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import {useState, useEffect} from 'react';
 
-export default function GreetingCard() {
+export default function Header() {
     // State for live clock and dynamic date
     const [currentTime, setCurrentTime] = useState('');
     const [currentDate, setCurrentDate] = useState('');
@@ -40,16 +39,29 @@ export default function GreetingCard() {
 
     // Dynamic theme
     const currentHour = new Date().getHours();
-    let gradientColors: readonly [string, string, ...string[]];
+
+    // 1. Initialize variables with your baseline Morning values
     let greeting = "Good Morning";
     let greetingIcon: "sunny" | "moon" = "sunny";
+    let gradientColors: readonly [string, string, ...string[]] = ['#FEF3C7', '#FDE68A']; // Default: Morning Gold
     let textColor = '#78350F';
     let subTextColor = '#92400E';
 
+    // 2. Run sequential time-of-day checks
     if (currentHour >= 5 && currentHour < 12) {
-        gradientColors = ['#FEF3C7', '#FDE68A']; // Morning Gold
+        // 🌅 Morning (5:00 AM - 11:59 AM)
+        // Uses the baseline default values initialized above
     } 
-    else if (currentHour >= 12 && currentHour < 18) {
+    else if (currentHour >= 12 && currentHour < 17) {
+        // ☀️ Afternoon (12:00 PM - 4:59 PM)
+        greeting = "Good Afternoon";
+        greetingIcon = "sunny";
+        gradientColors = ['#E0F2FE', '#BAE6FD']; // Sky Blue
+        textColor = '#0369A1';
+        subTextColor = '#075985';
+    } 
+    else if (currentHour >= 17 && currentHour < 21) {
+        // 🌆 Evening (5:00 PM - 8:59 PM)
         greeting = "Good Evening";
         greetingIcon = "sunny";
         gradientColors = ['#FFEDD5', '#FED7AA']; // Sunset Orange
@@ -57,6 +69,8 @@ export default function GreetingCard() {
         subTextColor = '#9A3412';
     } 
     else {
+        // 🌌 Night (9:00 PM - 4:59 AM)
+        // Catches late night (21, 22, 23) and early morning hours (0, 1, 2, 3, 4) smoothly
         greeting = "Good Night";
         greetingIcon = "moon";
         gradientColors = ['#1E1B4B', '#312E81']; // Night Indigo
@@ -66,28 +80,28 @@ export default function GreetingCard() {
 
     return (
         <LinearGradient colors={gradientColors} style={styles.headerBanner}>
-        {/* Left Column: Text Data */}
-        <View style={styles.leftColumn}>
-            <Text style={[styles.greetingText, { color: textColor }]}>
-                {greeting}
-            </Text>
-            <Text style={[styles.timeText, { color: subTextColor }]}>
-                {currentTime}
-            </Text>
-            <Text style={[styles.dateText, { color: subTextColor }]}>
-                {currentDate}
-            </Text>
-        </View>
+          {/* Left Column: Text Data */}
+          <View style={styles.leftColumn}>
+              <Text style={[styles.greetingText, { color: textColor }]}>
+                  {greeting}
+              </Text>
+              <Text style={[styles.timeText, { color: subTextColor }]}>
+                  {currentTime}
+              </Text>
+              <Text style={[styles.dateText, { color: subTextColor }]}>
+                  {currentDate}
+              </Text>
+          </View>
 
-        {/* Right Column: Dynamic Large Icon */}
-        <View style={styles.rightColumn}>
-            <Ionicons 
-            name={greetingIcon} 
-            size={80} 
-            color={currentHour >= 18 || currentHour < 5 ? '#FCD34D' : '#F59E0B'} 
-            style={styles.backgroundImage}
-            />
-        </View>
+          {/* Right Column: Dynamic Large Icon */}
+          <View style={styles.rightColumn}>
+              <Ionicons 
+              name={greetingIcon} 
+              size={80} 
+              color={currentHour >= 18 || currentHour < 5 ? '#FCD34D' : '#F59E0B'} 
+              style={styles.backgroundImage}
+              />
+          </View>
         </LinearGradient>
     );
 }

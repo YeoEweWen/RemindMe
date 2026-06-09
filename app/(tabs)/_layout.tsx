@@ -8,12 +8,13 @@ export default function TabLayout() {
       initialRouteName="index"
       screenOptions={{
         tabBarShowLabel: false,
+        headerShown: false,
         tabBarStyle: styles.tabBar,
       }}
     >
       {/* ADD */}
       <Tabs.Screen
-        name="add_tasks"
+        name="add-task"
         options={{
           title: 'Add Task',
           tabBarItemStyle: {
@@ -46,7 +47,7 @@ export default function TabLayout() {
 
       {/* LIST */}
       <Tabs.Screen
-        name="tasks_list"
+        name="task-list"
         
         options={{
           title: 'List',
