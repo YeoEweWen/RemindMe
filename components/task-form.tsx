@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  TouchableOpacity, 
-  TextInputProps, 
-  Platform 
-} from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import React, { useState } from 'react';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TextInputProps,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 // =========================================================================
 // 📝 1. FORM INPUT FIELD COMPONENT
@@ -53,7 +53,7 @@ interface CategorySelectorProps {
 }
 
 const BUILT_IN_CATEGORIES = [
-  { id: 'personal', label: '🙋 Personal' },
+  { id: 'personal', label: '🏠 Personal' },
   { id: 'study', label: '🎓 Study' },
   { id: 'work', label: '💼 Work' },
 ];

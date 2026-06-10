@@ -1,12 +1,15 @@
-import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import ErrorScreen from "@/components/error-screen";
 import Header from '@/components/home/header';
 import MetricCard from '@/components/home/metric-card';
+import LoadingScreen from "@/components/loader";
 import ScrollablePills, { PillItem } from '@/components/scrollable-pills';
 import TaskCard, { TaskItem } from '@/components/task-card';
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CATEGORIES: PillItem[] = [
   { id: 'all', label: '📊 All'},
@@ -74,17 +77,83 @@ const MOCK_TASKS: TaskItem[] = [
 ];
 
 export default function Home() {
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+
   const [taskCategory, setTaskCategory] = useState('all');
   const [tasks, setTasks] = useState<TaskItem[]>(MOCK_TASKS);
 
+  // Fetch the tasks list
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      setRefreshing(true);
+      setError("");
+
+      const URL = "https://6a204e32e96c1d13b58750a7.mockapi.io/api/remind-me/tasks";
+
+      const response = await fetch(URL);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch the tasks.");
+      }
+
+      const data = await response.json();
+
+      //setPosts(data);
+      console.log(data);
+    } 
+    catch (err: any) {
+      setError(err.message);
+    } 
+    finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Run once when component loads
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  // Run when the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchTasks();
+    }, [])
+  );
+
+  // Loading Screen
+  if (loading) {
+    return (
+      <LoadingScreen message="Syncing the tasks..."/>
+    );
+  }
+
+  // Error Screen
+  if (error) {
+    return (
+      <ErrorScreen message="Failed to fetch the tasks." onRetry={() => {console.log("Retry")}}/>
+    );
+  }
+
   const handleViewDetails = (id: string) => {
     console.log(`Maps to Details Screen for Task ID: ${id}`);
+    router.push({
+      pathname: '/task-details',
+      params: { id: id } // 🌟 Sent over to the form page
+    });
   };
 
   const handleToggleComplete = (id: string) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
   };
 
+  
   return (
     <SafeAreaView style={styles.rootContainer}>
       <StatusBar style="dark" />

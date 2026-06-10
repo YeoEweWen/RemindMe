@@ -13,7 +13,7 @@ const getInitialDueDate = () => {
     return timeTracker;
   };
 
-export default function AddTasks() {
+export default function EditTask() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('personal');
@@ -42,13 +42,13 @@ export default function AddTasks() {
 
       <View style={styles.buttonRow}>
         <FormButton 
-          title="Clear" 
+          title="Reset" 
           variant="danger" 
           style={{ flex: 1 }} 
           onPress={() => console.log('Wipe inputs...')} 
         />
         <FormButton 
-          title="Add Task" 
+          title="Save Changes" 
           variant="primary" 
           style={{ flex: 2 }} // Takes up more room intentionally for primary emphasis
           onPress={() => console.log('Submit record...')} 
