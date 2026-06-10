@@ -56,9 +56,9 @@ export default function Header() {
         // ☀️ Afternoon (12:00 PM - 4:59 PM)
         greeting = "Good Afternoon";
         greetingIcon = "sunny";
-        gradientColors = ['#E0F2FE', '#BAE6FD']; // Sky Blue
-        textColor = '#0369A1';
-        subTextColor = '#075985';
+        gradientColors = ['#FEF9C3', '#FEF08A']; // 🌟 Soft Sun Yellow (Yellow 100 to Yellow 200)
+        textColor = '#713F12';                  // Deep Yellow-Brown for high contrast
+        subTextColor = '#854D0E';
     } 
     else if (currentHour >= 17 && currentHour < 21) {
         // 🌆 Evening (5:00 PM - 8:59 PM)
