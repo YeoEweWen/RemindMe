@@ -1,98 +1,209 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import ErrorScreen from "@/components/errorScreen";
+import Header from '@/components/home/header';
+import MetricCard from '@/components/home/metricCard';
+import LoadingScreen from "@/components/loader";
+import ScrollablePills, { PillItem } from '@/components/scrollablePills';
+import TaskCard, { TaskItem } from '@/components/taskCard';
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useCallback, useMemo, useState } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const CATEGORIES: PillItem[] = [
+  { id: 'all', label: '📊 All'},
+  { id: 'personal', label: '🏠 Personal'},
+  { id: 'study', label: '🎓 Study'},
+  { id: 'work', label: '💼 Work'},
+];
 
-export default function HomeScreen() {
+export default function Home() {
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+
+  const [metricValues, setMetricValues] = useState({completed: 0, pending: 0, urgent: 0})
+  const [taskCategory, setTaskCategory] = useState('all');
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
+
+  // Fetch tasks
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      setRefreshing(true);
+      setError("");
+
+      const today = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kuala_Lumpur",
+      }).format(new Date());
+
+      const URL = `https://6a204e32e96c1d13b58750a7.mockapi.io/api/remind-me/tasks?dueAt=${today}`;
+
+      const response = await fetch(URL);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setTasks([]);
+          setMetricValues({ completed: 0, pending: 0, urgent: 0 });
+          return;
+        }
+        throw new Error("Request failed");
+      }
+
+      const data: TaskItem[] = await response.json();
+
+      const priorityOrder = {
+        high: 3,
+        medium: 2,
+        low: 1,
+      };
+
+      data.sort((a, b) => {
+        // 1. isCompleted (incomplete first)
+        const completedDiff = Number(a.isCompleted) - Number(b.isCompleted);
+        if (completedDiff !== 0) return completedDiff;
+
+        // 2. due date
+        const aTime = a.dueAt
+          ? new Date(a.dueAt).getTime()
+          : Number.MAX_SAFE_INTEGER;
+
+        const bTime = b.dueAt
+          ? new Date(b.dueAt).getTime()
+          : Number.MAX_SAFE_INTEGER;
+
+        const dueDiff = aTime - bTime;
+        if (dueDiff !== 0) return dueDiff;
+
+        // 3. priority
+        return (
+          priorityOrder[b.priority ?? "low"] -
+          priorityOrder[a.priority ?? "low"]
+        );
+      });
+
+      setTasks(data);
+
+      setMetricValues({
+        completed: data.filter(t => t.isCompleted).length,
+        pending: data.filter(t => !t.isCompleted).length,
+        urgent: data.filter(t => t.priority === 'high').length,
+      });
+
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTasks();
+    }, [])
+  );
+
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((t) => {
+      if (taskCategory === "all") return true;
+      return t.category === taskCategory;
+    });
+  }, [tasks, taskCategory]);
+
+  if (loading) {
+    return <LoadingScreen message="Syncing the tasks..." />;
+  }
+
+  if (error) {
+    return (
+      <ErrorScreen
+        message="Failed to fetch the tasks."
+        onRetry={fetchTasks}
+      />
+    );
+  }
+
+  const handleViewDetails = (id: string) => {
+    router.push({
+      pathname: '/task-details',
+      params: { id }
+    });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={styles.rootContainer}>
+      <StatusBar style="dark" />
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <Header />
+
+      <View style={styles.metricsRow}>
+        <MetricCard title="Completed" count={metricValues.completed} iconName="checkmark-circle" iconColor="#019262" countColor="#019262" />
+        <MetricCard title="Pending" count={metricValues.pending} iconName="time" iconColor="#c9ab04" countColor="#c9ab04" />
+        <MetricCard title="Urgent" count={metricValues.urgent} iconName="alert-circle" iconColor="#EF4444" countColor="#EF4444" />
+      </View>
+
+      <Text style={styles.title}>Today's Focus 🎯</Text>
+
+      <ScrollablePills
+        data={CATEGORIES}
+        selectedId={taskCategory}
+        onSelect={setTaskCategory}
+        containerStyle={{ marginVertical: 10 }}
+      />
+
+      <FlatList
+        data={filteredTasks}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TaskCard
+            task={item}
+            onPressDetails={handleViewDetails}
+          />
+        )}
+        style={styles.taskListScrollView}
+        contentContainerStyle={styles.tasksListContent}
+        showsVerticalScrollIndicator={false}
+        refreshing={refreshing}
+        onRefresh={fetchTasks}
+        ListEmptyComponent={
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No tasks found
+          </Text>
+        }
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  rootContainer: {
+    backgroundColor: "#cae7ff",
+    flex: 1,
+    paddingHorizontal: 20
+  },
+
+  metricsRow: {
+    marginTop: 15,
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  title: {
+    marginTop: 15,
+    marginLeft: 10,
+    fontSize: 28,
+    fontWeight: 'bold',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+
+  taskListScrollView: {
+    flex: 1,
   },
+
+  tasksListContent: {
+    paddingBottom: 90,
+  }
 });
