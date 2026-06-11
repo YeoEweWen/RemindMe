@@ -6,7 +6,7 @@ interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   onSubmit: () => void;
-  onClear?: () => void; // 🌟 Added optional onClear prop type
+  onClear?: () => void;
   placeholder?: string;
 }
 
@@ -14,23 +14,21 @@ export default function SearchBar({
   value, 
   onChangeText, 
   onSubmit, 
-  onClear, // 🌟 Destructured onClear
+  onClear, 
   placeholder = "Search tasks..." 
 }: SearchBarProps) {
   
   const handleClear = () => {
-    onChangeText(''); // Empties the text field input
+    onChangeText(''); 
     if (onClear) {
-      onClear(); // 🌟 Tells the parent component to reset search results
+      onClear(); 
     }
   };
 
   return (
     <View style={styles.searchContainer}>
-      {/* Search Lens Icon */}
       <Ionicons name="search" size={18} color="#64748B" style={styles.searchIcon} />
       
-      {/* Input Field */}
       <TextInput
         style={styles.inputField}
         value={value}
@@ -44,7 +42,6 @@ export default function SearchBar({
         clearButtonMode="never" 
       />
 
-      {/* Dynamic Clear Button */}
       {value.length > 0 && (
         <TouchableOpacity 
           onPress={handleClear} 
@@ -74,9 +71,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     elevation: 1,
   },
+
   searchIcon: {
     marginRight: 8,
   },
+
   inputField: {
     flex: 1,
     fontSize: 15,
@@ -85,6 +84,7 @@ const styles = StyleSheet.create({
     height: '100%',
     paddingVertical: 0, 
   },
+
   clearButton: {
     padding: 4,
     justifyContent: 'center',

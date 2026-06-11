@@ -11,6 +11,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// Configuration for ScrollablePills
 const CATEGORIES: PillItem[] = [
   { id: 'all', label: '📊 All'},
   { id: 'personal', label: '🏠 Personal'},
@@ -46,6 +47,7 @@ export default function Home() {
 
       if (!response.ok) {
         if (response.status === 404) {
+          // No task found.
           setTasks([]);
           setMetricValues({ completed: 0, pending: 0, urgent: 0 });
           return;
@@ -62,40 +64,37 @@ export default function Home() {
       };
 
       data.sort((a, b) => {
-        // 1. isCompleted (incomplete first)
+        // Prioritize the incomplete task first. 
         const completedDiff = Number(a.isCompleted) - Number(b.isCompleted);
         if (completedDiff !== 0) return completedDiff;
 
-        // 2. due date
-        const aTime = a.dueAt
-          ? new Date(a.dueAt).getTime()
-          : Number.MAX_SAFE_INTEGER;
-
-        const bTime = b.dueAt
-          ? new Date(b.dueAt).getTime()
-          : Number.MAX_SAFE_INTEGER;
-
+        // Sort by the nearest due date.
+        const aTime = a.dueAt ? new Date(a.dueAt).getTime() : Number.MAX_SAFE_INTEGER
+        const bTime = b.dueAt ? new Date(b.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
         const dueDiff = aTime - bTime;
         if (dueDiff !== 0) return dueDiff;
 
-        // 3. priority
+        // Sort by priority
         return (
-          priorityOrder[b.priority ?? "low"] -
-          priorityOrder[a.priority ?? "low"]
+          priorityOrder[b.priority ?? "low"] - priorityOrder[a.priority ?? "low"]
         );
       });
 
+      // Load the tasks
       setTasks(data);
 
+      // Load the metric values
       setMetricValues({
         completed: data.filter(t => t.isCompleted).length,
         pending: data.filter(t => !t.isCompleted).length,
         urgent: data.filter(t => t.priority === 'high').length,
       });
 
-    } catch (err: any) {
+    } 
+    catch (err: any) {
       setError(err.message);
-    } finally {
+    } 
+    finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -138,8 +137,10 @@ export default function Home() {
     <SafeAreaView style={styles.rootContainer}>
       <StatusBar style="dark" />
 
+      {/* Custom header with datetime and image as background.*/}
       <Header />
 
+      {/* Simple summary of total completed, pending, and urgent (High Priority) tasks. */}
       <View style={styles.metricsRow}>
         <MetricCard title="Completed" count={metricValues.completed} iconName="checkmark-circle" iconColor="#019262" countColor="#019262" />
         <MetricCard title="Pending" count={metricValues.pending} iconName="time" iconColor="#c9ab04" countColor="#c9ab04" />
@@ -148,6 +149,7 @@ export default function Home() {
 
       <Text style={styles.title}>Today's Focus 🎯</Text>
 
+      {/* Pills for filtering the category */}
       <ScrollablePills
         data={CATEGORIES}
         selectedId={taskCategory}
@@ -155,6 +157,7 @@ export default function Home() {
         containerStyle={{ marginVertical: 10 }}
       />
 
+      {/* List of the task for the current day */}
       <FlatList
         data={filteredTasks}
         keyExtractor={(item) => item.id.toString()}

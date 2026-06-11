@@ -9,7 +9,7 @@ interface LoadingScreenProps {
 export default function LoadingScreen({ message }: LoadingScreenProps) {
   return (
     <View style={styles.container}>
-      {/* Ensure the status bar matches the clean theme background canvas */}
+      
       <StatusBar style="dark" />
 
       <View style={styles.loaderWrapper}>
@@ -26,21 +26,24 @@ export default function LoadingScreen({ message }: LoadingScreenProps) {
 // =========================================================================
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject, // Stretches over the whole viewport stack
-    backgroundColor: '#CAE7FF',       // Your exact light blue layout color theme
+    ...StyleSheet.absoluteFillObject, 
+    backgroundColor: '#CAE7FF',      
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 999,                      // Keeps it floated safely above text forms
+    zIndex: 999,                     
   },
+  
   loaderWrapper: {
-    flex: 1,                          // Keeps spinner elements floating cleanly near the bottom
+    flex: 1,                          
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: 40,
   },
+
   spinner: {
     marginBottom: 12,
   },
+
   loadingMessageText: {
     fontSize: 14,
     fontWeight: '600',
