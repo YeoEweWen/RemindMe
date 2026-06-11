@@ -1,27 +1,25 @@
 import FormButton from '@/components/formButton';
+import Header from '@/components/header';
 import { CategorySelector, FormDatePicker, FormInput, PrioritySelector } from '@/components/taskForm';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import Header from '@/components/header';
-
 const getInitialDueDate = () => {
+  // Min: 3 hours
   const timeTracker = new Date();
   timeTracker.setHours(timeTracker.getHours() + 3);
   return timeTracker;
 };
 
 export default function AddTasks() {
-  // Form Field States
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('personal');
   const [priority, setPriority] = useState('low');
   const [dueDate, setDueDate] = useState<Date>(getInitialDueDate());
 
-  // Loading State for Network Requests
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Function to reset the form inputs back to defaults
@@ -33,9 +31,9 @@ export default function AddTasks() {
     setDueDate(getInitialDueDate());
   };
 
-  // Core function to push record data to your MockAPI endpoint
+  // Submit the data using post method.
   const handleAddTask = async () => {
-    // Validation Matrix: Enforce both Title and Description
+    // Input Validations
     if (!title.trim() && !description.trim()) {
       Alert.alert("Missing Information", "Please enter both a task title and description.");
       return;
@@ -54,7 +52,6 @@ export default function AddTasks() {
     try {
       setIsSubmitting(true);
 
-      // Format Payload to match the data schema structure your app expects
       const taskPayload = {
         title: title.trim(),
         description: description.trim(),
@@ -64,7 +61,6 @@ export default function AddTasks() {
         isCompleted: false,           
       };
 
-      // Fire Post Network Request Matrix 
       const URL = `https://6a204e32e96c1d13b58750a7.mockapi.io/api/remind-me/tasks`;
       const response = await fetch(URL, {
         method: 'POST',
@@ -78,19 +74,20 @@ export default function AddTasks() {
         throw new Error("Failed to write task item record to database.");
       }
 
-      // 🌟 Success UI Handling Matrix: Clears form fields but stays on page
       Alert.alert("Success 🎉", "Task added successfully!", [
         {
           text: "OK",
           onPress: () => {
-            handleClearForm(); // Form resets instantly here, ready for the next entry
+            handleClearForm();
           }
         }
       ]);
 
-    } catch (error: any) {
+    } 
+    catch (error: any) {
       Alert.alert("Error", error.message || "An unexpected error occurred.");
-    } finally {
+    } 
+    finally {
       setIsSubmitting(false);
     }
   };
@@ -157,12 +154,14 @@ const styles = StyleSheet.create({
     flex: 1, 
     paddingHorizontal: 20
   },
+
   buttonRow: {
     flexDirection: 'row',
     gap: 12,        
     width: '100%',
     marginTop: 20,
   },
+
   spinnerSpacing: {
     marginTop: 26,
   }

@@ -4,7 +4,7 @@ import { StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-
 interface FormButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'success'; // 🌟 Added 'success'
+  variant?: 'primary' | 'secondary' | 'danger' | 'success'; 
   style?: ViewStyle; 
 }
 
@@ -21,7 +21,7 @@ export default function FormButton({
         return styles.btnSecondary;
       case 'danger':
         return styles.btnDanger;
-      case 'success': // 🌟 Added success mapping
+      case 'success': 
         return styles.btnSuccess;
       case 'primary':
       default:
@@ -35,7 +35,7 @@ export default function FormButton({
         return styles.textSecondary;
       case 'primary':
       case 'danger':
-      case 'success': // 🌟 Success inherits clean white text readability
+      case 'success':
       default:
         return styles.textWhite;
     }
@@ -63,11 +63,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     minWidth: 100,
   },
+
   baseText: {
     fontSize: 16,
     fontWeight: '700',
   },
-  // 🔵 Primary Style (Save / Add)
+
   btnPrimary: {
     backgroundColor: '#1E3A8A', 
     shadowColor: '#1E3A8A',
@@ -76,13 +77,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  // ⚪ Secondary Style (Clear)
+
   btnSecondary: {
     backgroundColor: '#E2E8F0', 
     borderWidth: 1,
     borderColor: '#CBD5E1',
   },
-  // 🔴 Danger Style (Reset)
+
   btnDanger: {
     backgroundColor: '#EF4444', 
     shadowColor: '#EF4444',
@@ -90,19 +91,20 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
   },
-  // 🟢 Success Style (Added! Complete/Done actions)
+
   btnSuccess: {
-    backgroundColor: '#10B981', // Premium Emerald Green
+    backgroundColor: '#10B981',
     shadowColor: '#10B981',
     shadowOpacity: 0.12,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  // Text Coloring variants
+
   textWhite: {
     color: '#FFFFFF',
   },
+
   textSecondary: {
     color: '#475569', 
   },

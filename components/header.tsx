@@ -5,19 +5,18 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 interface HeaderProps {
   title: string;
-  showBackButton?: boolean; //
+  showBackButton?: boolean; 
 }
 
 export default function Header({ 
   title, 
-  showBackButton = true // 🌟 Defaults to true if left out
+  showBackButton = true 
 }: HeaderProps) {
   const router = useRouter();
 
   return (
     <View style={styles.headerContainer}>
-      
-      {/* 🌟 CONDITIONALLY RENDER THE BUTTON OR A DUMMY SPACE */}
+    
       {showBackButton ? (
         <TouchableOpacity 
           activeOpacity={0.7} 
@@ -27,15 +26,14 @@ export default function Header({
           <Ionicons name="chevron-back" size={24} color="#1E3A8A" />
         </TouchableOpacity>
       ) : (
-        <View style={styles.spacer} /> // Keeps layout balance when button is hidden
+        <View style={styles.spacer} /> 
       )}
 
-      {/* Centered Page Title */}
+      
       <Text style={styles.headerTitle} numberOfLines={1}>
         {title}
       </Text>
 
-      {/* Right-side alignment block */}
       <View style={styles.spacer} />
     </View>
   );
@@ -80,6 +78,6 @@ const styles = StyleSheet.create({
   },
 
   spacer: {
-    width: 40, // Keeps the title perfectly centered regardless of button visibility
+    width: 40, 
   },
 });

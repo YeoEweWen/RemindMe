@@ -18,8 +18,8 @@ export default function TabLayout() {
         options={{
           title: 'Add Task',
           tabBarItemStyle: {
-            marginRight: -20, // Negative margin on the right pulls the boundary away from the center
-            marginLeft: 20,   // Positive margin on the left pushes the whole item right
+            marginRight: -20,
+            marginLeft: 20,
           },
           tabBarIcon: ({ focused }) => (
             <View style={styles.tabItem}>
@@ -52,8 +52,8 @@ export default function TabLayout() {
         options={{
           title: 'List',
           tabBarItemStyle: {
-            marginRight: 20, // Negative margin on the right pulls the boundary away from the center
-            marginLeft: -20,   // Positive margin on the left pushes the whole item right
+            marginRight: 20, 
+            marginLeft: -20,
           },
           tabBarIcon: ({ focused }) => (
             <View style={styles.tabItem}>

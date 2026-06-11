@@ -1,11 +1,11 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface ErrorScreenProps {
   message?: string;
-  onRetry?: () => void; // 🌟 Optional action to let users retry a failed operation
+  onRetry?: () => void;
 }
 
 export default function ErrorScreen({ 
@@ -14,10 +14,8 @@ export default function ErrorScreen({
 }: ErrorScreenProps) {
   return (
     <View style={styles.container}>
-      {/* Keeps status bar matching the clean canvas layout */}
       <StatusBar style="dark" />
 
-      {/* ⚠️ ERROR CENTERED ICON & MESSAGING BLOCK */}
       <View style={styles.errorWrapper}>
         <View style={styles.iconCircle}>
           <Ionicons name="alert-circle" size={54} color="#EF4444" />
@@ -27,7 +25,6 @@ export default function ErrorScreen({
         <Text style={styles.errorMessageText}>{message}</Text>
       </View>
 
-      {/* 🔄 OPTIONAL ACTION FOOTER TIER */}
       {onRetry ? (
         <View style={styles.footerWrapper}>
           <TouchableOpacity 
@@ -44,38 +41,39 @@ export default function ErrorScreen({
   );
 }
 
-// =========================================================================
-// 🎨 ERROR LAYOUT STYLESHEET
-// =========================================================================
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject, 
-    backgroundColor: '#CAE7FF',       // Retains your exact light blue background canvas
+    backgroundColor: '#CAE7FF',       
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 999,                      
-    paddingHorizontal: 32,            // Prevents long messages from clipping the edges
+    paddingHorizontal: 32,            
   },
+  
   errorWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 3,                          // Centers content beautifully in the upper 75% region
+    flex: 3,                         
   },
+
   iconCircle: {
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: '#FEE2E2',       // Soft warning pink tint frame backplate
+    backgroundColor: '#FEE2E2',       
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
+
   errorTitleText: {
     fontSize: 26,
     fontWeight: '900',
-    color: '#0F2C59',                 // Matches your brand deep contrast text color
+    color: '#0F2C59',                 
     marginBottom: 8,
   },
+
   errorMessageText: {
     fontSize: 16,
     fontWeight: '600',
@@ -83,14 +81,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
+
   footerWrapper: {
-    flex: 1,                          // Places button neatly towards the base row structure
+    flex: 1,                          
     justifyContent: 'center',
     width: '100%',
     paddingBottom: 40,
   },
+
   retryButton: {
-    backgroundColor: '#1E3A8A',       // Signature Royal Blue Button
+    backgroundColor: '#1E3A8A',       
     height: 50,
     borderRadius: 12,
     justifyContent: 'center',
@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+
   retryButtonText: {
     color: '#FFFFFF',
     fontSize: 16,

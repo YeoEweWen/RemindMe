@@ -1,17 +1,15 @@
+import DropdownFilterBar from "@/components/dropdownFilterBar";
+import ErrorScreen from "@/components/errorScreen";
+import Header from "@/components/header";
+import LoadingScreen from "@/components/loader";
+import SearchBar from "@/components/searchBar";
+import TaskCard, { TaskItem } from "@/components/taskCard";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import Header from "@/components/header";
-import TaskCard, { TaskItem } from "@/components/taskCard";
-
-import DropdownFilterBar from "@/components/dropdownFilterBar";
-import ErrorScreen from "@/components/errorScreen";
-import LoadingScreen from "@/components/loader";
-import SearchBar from "@/components/searchBar";
 
 export default function TaskList() {
   const router = useRouter();
@@ -26,7 +24,7 @@ export default function TaskList() {
   const [priority, setPriority] = useState('all');
   const [status, setStatus] = useState('all');
 
-  // Filter Configuration mapping your UI layout state
+  // Configuration for Filters
   const filterGroups = [
     {
       key: 'category',
@@ -68,7 +66,7 @@ export default function TaskList() {
 
   const [tasks, setTasks] = useState<TaskItem[]>([]);
 
-  // Core task fetching block supporting optional overrides for instant clearing
+  // Fetch Tasks
   const fetchTasks = async (queryOverride?: string) => {
     try {
       setLoading(true);
@@ -83,6 +81,7 @@ export default function TaskList() {
 
       if (!response.ok) {
         if (response.status === 404) {
+          // No task found.
           setTasks([]);
           return;
         }
@@ -91,7 +90,6 @@ export default function TaskList() {
 
       const data: TaskItem[] = await response.json();
 
-      // Explicit type map declaration to resolve string lookup indexing errors
       const priorityOrder: { [key: string]: number } = {
         high: 3,
         medium: 2,
@@ -99,23 +97,18 @@ export default function TaskList() {
       };
 
       data.sort((a, b) => {
-        // 1. Completion grouping (Uncompleted tasks float to the top)
+        // Prioritize the incomplete task first. 
         const completedDiff = Number(a.isCompleted) - Number(b.isCompleted);
         if (completedDiff !== 0) return completedDiff;
 
-        // 2. Schedule timeline sorting
-        const aTime = a.dueAt
-          ? new Date(a.dueAt).getTime()
-          : Number.MAX_SAFE_INTEGER;
-
-        const bTime = b.dueAt
-          ? new Date(b.dueAt).getTime()
-          : Number.MAX_SAFE_INTEGER;
+        // Sort by the nearest due date.
+        const aTime = a.dueAt ? new Date(a.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
+        const bTime = b.dueAt ? new Date(b.dueAt).getTime() : Number.MAX_SAFE_INTEGER;
 
         const dueDiff = aTime - bTime;
         if (dueDiff !== 0) return dueDiff;
 
-        // 3. Normalized Priority weight weight matching
+        // Sort by priority
         const aPriority = (a.priority ?? "low").toLowerCase();
         const bPriority = (b.priority ?? "low").toLowerCase();
 
@@ -143,13 +136,13 @@ export default function TaskList() {
   // Dynamic filter processing matrix monitoring dropdown items change events
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
-      // 1. Evaluate Category Group Match
+      // Category Filter
       const matchesCategory = category === 'all' || task.category?.toLowerCase() === category.toLowerCase();
 
-      // 2. Evaluate Priority Group Match
+      // Priority Filter
       const matchesPriority = priority === 'all' || task.priority?.toLowerCase() === priority.toLowerCase();
 
-      // 3. Evaluate Real-time Status Condition
+      // Status Filter
       let matchesStatus = true;
       if (status !== 'all') {
         const now = new Date();
@@ -237,9 +230,11 @@ const styles = StyleSheet.create({
     flex: 1, 
     paddingHorizontal: 20
   },
+  
   taskListScrollView: {
     flex: 1,
   },
+
   tasksListContent: {
     paddingBottom: 90,
   }

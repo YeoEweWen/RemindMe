@@ -28,12 +28,10 @@ export default function DropdownFilterBar({ groups }: DropdownFilterBarProps) {
     <View style={styles.mainWrapper}>
       <View style={styles.barContainer}>
         {groups.map((group, index) => {
-          // Find the active label text to display inline
           const currentOption = group.options.find(o => o.id === group.currentValue);
 
           return (
             <React.Fragment key={group.key}>
-              {/* Segmented Button Block */}
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => setActiveGroup(group)}
@@ -51,14 +49,12 @@ export default function DropdownFilterBar({ groups }: DropdownFilterBarProps) {
                 </View>
               </TouchableOpacity>
 
-              {/* Vertical Divider line between columns */}
               {index < groups.length - 1 && <View style={styles.verticalDivider} />}
             </React.Fragment>
           );
         })}
       </View>
 
-      {/* 🌟 BOTTOM ACTION SELECTION SHEET MODAL */}
       <Modal
         visible={activeGroup !== null}
         transparent={true}
@@ -67,7 +63,6 @@ export default function DropdownFilterBar({ groups }: DropdownFilterBarProps) {
       >
         <Pressable style={styles.modalOverlay} onPress={() => setActiveGroup(null)}>
           <View style={styles.sheetContainer}>
-            {/* Header section inside picker sheet */}
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Filter by {activeGroup?.title}</Text>
               <TouchableOpacity onPress={() => setActiveGroup(null)}>
@@ -75,7 +70,6 @@ export default function DropdownFilterBar({ groups }: DropdownFilterBarProps) {
               </TouchableOpacity>
             </View>
 
-            {/* List options loop container */}
             {activeGroup && (
               <FlatList
                 data={activeGroup.options}
@@ -88,7 +82,7 @@ export default function DropdownFilterBar({ groups }: DropdownFilterBarProps) {
                       style={[styles.optionRow, isSelected && styles.optionRowSelected]}
                       onPress={() => {
                         activeGroup.onSelect(item.id);
-                        setActiveGroup(null); // Instantly dismiss picker sheet smoothly
+                        setActiveGroup(null);
                       }}
                     >
                       <View style={styles.optionLeftBlock}>
@@ -173,7 +167,7 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.3)', // Dark frosted backdrop style dimming
+    backgroundColor: 'rgba(15, 23, 42, 0.3)', 
     justifyContent: 'flex-end',
   },
 
@@ -181,7 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 34, // Safe space padding buffer context area for modern screen bases
+    paddingBottom: 34,
     maxHeight: '50%',
   },
 
