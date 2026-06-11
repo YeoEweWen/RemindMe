@@ -1,12 +1,17 @@
-import SearchBar from '@/components/search-bar';
-import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { StyleSheet, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import DropdownFilterBar from '@/components/dropdown-filter-bar';
-import TaskCard, { TaskItem } from '@/components/task-card';
+import { useState, useCallback, useMemo } from "react";
+import { FlatList, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
-import Header from '@/components/header';
+import Header from "@/components/header";
+import TaskCard, { TaskItem } from "@/components/taskCard";
+
+import LoadingScreen from "@/components/loader";
+import ErrorScreen from "@/components/errorScreen";
+import SearchBar from "@/components/searchBar";
+import DropdownFilterBar from "@/components/dropdownFilterBar";
 
 const getFutureTime = (hoursAhead: number) => {
   const d = new Date();
@@ -14,59 +19,13 @@ const getFutureTime = (hoursAhead: number) => {
   return d;
 };
 
-const MOCK_TASKS: TaskItem[] = [
-  {
-    id: 'task-1',
-    title: 'React Native Lab Build',
-    description: 'Refactor the core navigation stack files, isolate component architecture modules, and clear the typescript layout errors.',
-    dueTime: getFutureTime(3),
-    priority: 'High',
-    isCompleted: false,
-  },
-  {
-    id: 'task-2',
-    title: 'Review System Database Sync Logs',
-    description: 'Check table keys for consistency across server endpoints.',
-    dueTime: getFutureTime(6),
-    priority: 'Medium',
-    isCompleted: false,
-  },
-  {
-    id: 'task-3',
-    title: 'Update Typography Stylesheet',
-    description: 'Clean up styling files.',
-    dueTime: getFutureTime(9),
-    priority: 'Low',
-    isCompleted: true,
-  },
-
-  {
-    id: 'task-4',
-    title: 'React Native Lab Build',
-    description: 'Refactor the core navigation stack files, isolate component architecture modules, and clear the typescript layout errors.',
-    dueTime: getFutureTime(3),
-    priority: 'High',
-    isCompleted: false,
-  },
-  {
-    id: 'task-5',
-    title: 'Review System Database Sync Logs',
-    description: 'Check table keys for consistency across server endpoints.',
-    dueTime: getFutureTime(6),
-    priority: 'Medium',
-    isCompleted: false,
-  },
-  {
-    id: 'task-6',
-    title: 'Update Typography Stylesheet',
-    description: 'Clean up styling files.',
-    dueTime: getFutureTime(9),
-    priority: 'Low',
-    isCompleted: true,
-  },
-];
-
 export default function TaskList() {
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+
   const [searchQuery, setSearchQuery] = useState('');
 
   const [category, setCategory] = useState('all');
@@ -113,15 +72,109 @@ export default function TaskList() {
     },
   ];
 
-  const [tasks, setTasks] = useState<TaskItem[]>(MOCK_TASKS);
+  const [tasks, setTasks] = useState<TaskItem[]>([]);
 
-  const handleViewDetails = (id: string) => {
-    console.log(`Maps to Details Screen for Task ID: ${id}`);
-  };
-
-  const handleToggleComplete = (id: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, isCompleted: !t.isCompleted } : t));
-  };
+  // Fetch tasks
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        setRefreshing(true);
+        setError("");
+  
+        const URL = `https://6a204e32e96c1d13b58750a7.mockapi.io/api/remind-me/tasks`;
+  
+        const response = await fetch(URL);
+  
+        if (!response.ok) {
+          if (response.status === 404) {
+            setTasks([]);
+            return;
+          }
+          throw new Error("Request failed");
+        }
+  
+        const data: TaskItem[] = await response.json();
+  
+        const priorityOrder = {
+          high: 3,
+          medium: 2,
+          low: 1,
+        };
+  
+        data.sort((a, b) => {
+          // 1. isCompleted (incomplete first)
+          const completedDiff = Number(a.isCompleted) - Number(b.isCompleted);
+          if (completedDiff !== 0) return completedDiff;
+  
+          // 2. due date
+          const aTime = a.dueAt
+            ? new Date(a.dueAt).getTime()
+            : Number.MAX_SAFE_INTEGER;
+  
+          const bTime = b.dueAt
+            ? new Date(b.dueAt).getTime()
+            : Number.MAX_SAFE_INTEGER;
+  
+          const dueDiff = aTime - bTime;
+          if (dueDiff !== 0) return dueDiff;
+  
+          // 3. priority
+          return (
+            priorityOrder[b.priority ?? "low"] -
+            priorityOrder[a.priority ?? "low"]
+          );
+        });
+  
+        setTasks(data);
+  
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    };
+  
+    useFocusEffect(
+      useCallback(() => {
+        fetchTasks();
+      }, [])
+    );
+  
+    const filteredTasks = useMemo(() => {
+      return tasks.filter((t) => {
+        if ("all" === "all") return true;
+        return t.category === "all";
+      });
+    }, [tasks, "all"]);
+  
+    if (loading) {
+      return <LoadingScreen message="Syncing the tasks..." />;
+    }
+  
+    if (error) {
+      return (
+        <ErrorScreen
+          message="Failed to fetch the tasks."
+          onRetry={fetchTasks}
+        />
+      );
+    }
+  
+    const handleViewDetails = (id: string) => {
+      router.push({
+        pathname: '/task-details',
+        params: { id }
+      });
+    };
+  
+    const handleToggleComplete = (id: string) => {
+      setTasks(prev =>
+        prev.map(t =>
+          t.id === id ? { ...t, isCompleted: !t.isCompleted } : t
+        )
+      );
+    };
 
   return (
     <SafeAreaView style={styles.rootContainer}>
@@ -136,20 +189,27 @@ export default function TaskList() {
 
       <DropdownFilterBar groups={filterGroups} />
       
-      <ScrollView 
-        style={styles.taskListScrollView} 
-        contentContainerStyle={styles.tasksListContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {tasks.map((item) => (
-          <TaskCard 
-            key={item.id}
+      <FlatList
+        data={filteredTasks}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TaskCard
             task={item}
             onPressDetails={handleViewDetails}
             onPressToggleComplete={handleToggleComplete}
           />
-        ))}
-      </ScrollView>
+        )}
+        style={styles.taskListScrollView}
+        contentContainerStyle={styles.tasksListContent}
+        showsVerticalScrollIndicator={false}
+        refreshing={refreshing}
+        onRefresh={fetchTasks}
+        ListEmptyComponent={
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            No tasks found 🎉
+          </Text>
+        }
+      />
 
     </SafeAreaView>
   );
@@ -167,7 +227,7 @@ const styles = StyleSheet.create({
   },
 
   tasksListContent: {
-    paddingBottom: 50,
+    paddingBottom: 90,
   }
 
 });

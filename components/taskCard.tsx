@@ -3,16 +3,18 @@ import { StyleSheet, Text, View, TouchableOpacity, ViewStyle } from 'react-nativ
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 // 1. Define valid priority levels
-export type PriorityLevel = 'High' | 'Medium' | 'Low';
+export type PriorityLevel = 'high' | 'medium' | 'low';
 
 // 2. Define strict TypeScript props for a single task item
 export interface TaskItem {
   id: string;
   title: string;
   description: string;
-  dueTime: Date; // JavaScript Date object to calculate hours left dynamically
+  dueAt: string;
+  createdAt: string;
   priority: PriorityLevel;
   isCompleted: boolean;
+  category: string;
 }
 
 interface TaskCardProps {
@@ -32,16 +34,17 @@ export default function TaskCard({
   // 3. Helper function to map priority to theme colors
   const getPriorityColor = (level: PriorityLevel) => {
     switch (level) {
-      case 'High': return '#EF4444';   // Vibrant Red
-      case 'Medium': return '#F59E0B'; // Warm Orange
-      case 'Low': return '#3B82F6';    // Theme Blue
+      case 'high': return '#EF4444';   // Vibrant Red
+      case 'medium': return '#F59E0B'; // Warm Orange
+      case 'low': return '#3B82F6';    // Theme Blue
     }
   };
 
   // 4. Helper function to compute "hours left" dynamically
-  const getHoursLeftString = (dueDate: Date) => {
+  const getHoursLeftString = (dueDate: string) => {
     const now = new Date();
-    const differenceInMs = dueDate.getTime() - now.getTime();
+    const due = new Date(dueDate);
+    const differenceInMs = due.getTime() - now.getTime();
     const hoursLeft = Math.ceil(differenceInMs / (1000 * 60 * 60));
 
     if (hoursLeft <= 0) return '⚠️ Overdue';
@@ -90,7 +93,7 @@ export default function TaskCard({
           
           {/* Due Time Display Track */}
           <Text style={styles.timeText}>
-            {getHoursLeftString(task.dueTime)}
+            {getHoursLeftString(task.dueAt)}
           </Text>
         </View>
 

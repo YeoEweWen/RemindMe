@@ -1,4 +1,4 @@
-import FormButton from '@/components/form-button';
+import FormButton from '@/components/formButton';
 import Header from '@/components/header';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams } from 'expo-router';

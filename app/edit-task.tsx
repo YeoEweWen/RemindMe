@@ -1,5 +1,5 @@
-import FormButton from '@/components/form-button';
-import { CategorySelector, FormDatePicker, FormInput, PrioritySelector } from '@/components/task-form';
+import FormButton from '@/components/formButton';
+import { CategorySelector, FormDatePicker, FormInput, PrioritySelector } from '@/components/taskForm';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
