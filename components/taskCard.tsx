@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ViewStyle } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 // 1. Define valid priority levels
 export type PriorityLevel = 'high' | 'medium' | 'low';
@@ -20,14 +20,13 @@ export interface TaskItem {
 interface TaskCardProps {
   task: TaskItem;
   onPressDetails: (id: string) => void;
-  onPressToggleComplete: (id: string) => void;
+  // 🌟 Removed onPressToggleComplete prop since it's no longer interactive
   containerStyle?: ViewStyle;
 }
 
 export default function TaskCard({
   task,
   onPressDetails,
-  onPressToggleComplete,
   containerStyle
 }: TaskCardProps) {
   
@@ -57,36 +56,32 @@ export default function TaskCard({
   return (
     <TouchableOpacity 
       activeOpacity={0.8} 
-      onPress={() => onPressDetails(task.id)} // 🌟 PRESSABLE TO VIEW DETAILS
+      onPress={() => onPressDetails(task.id)} // Pressing anywhere on the card still opens details
       style={[styles.card, { borderLeftColor: borderColor }, containerStyle]}
     >
       <View style={styles.mainRow}>
         
-        {/* Left Side: Clickable Checkbox Ring */}
-        <TouchableOpacity 
-          activeOpacity={0.7} 
-          onPress={() => onPressToggleComplete(task.id)}
-          style={styles.checkboxContainer}
-        >
+        {/* 🌟 FIXED: Swapped TouchableOpacity with a static View to make it completely unclickable */}
+        <View style={styles.checkboxContainer}>
           <Ionicons 
             name={task.isCompleted ? "checkmark-circle" : "ellipse-outline"} 
             size={22} 
             color={task.isCompleted ? "#10B981" : "#94A3B8"} 
           />
-        </TouchableOpacity>
+        </View>
 
         {/* Center Content: Title & Text Block */}
         <View style={styles.contentBlock}>
           <Text 
             style={[styles.taskTitle, task.isCompleted && styles.textCompleted]} 
-            numberOfLines={1} // Prevents long titles from breaking layout
+            numberOfLines={1} 
           >
             {task.title}
           </Text>
           
           <Text 
             style={styles.taskDescription} 
-            numberOfLines={2} // 🌟 AUTOMATICALLY TRUNCATES WITH "..." IF TOO LONG
+            numberOfLines={2} 
           >
             {task.description}
           </Text>
@@ -114,7 +109,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 14,
-    borderLeftWidth: 5, // 🌟 BORDER COLOR BASED ON PRIORITY LEVEL
+    borderLeftWidth: 5, 
     borderWidth: 1,
     borderColor: '#E2E8F0',
     marginBottom: 10,
@@ -132,7 +127,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   contentBlock: {
-    flex: 1, // Forces text section to shrink/wrap safely without squishing badges
+    flex: 1, 
     paddingRight: 8,
   },
   taskTitle: {

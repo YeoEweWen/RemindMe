@@ -1,21 +1,28 @@
-import React from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import React from 'react';
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
+  onSubmit: () => void;
+  onClear?: () => void; // 🌟 Added optional onClear prop type
   placeholder?: string;
 }
 
 export default function SearchBar({ 
   value, 
   onChangeText, 
+  onSubmit, 
+  onClear, // 🌟 Destructured onClear
   placeholder = "Search tasks..." 
 }: SearchBarProps) {
   
   const handleClear = () => {
-    onChangeText('');
+    onChangeText(''); // Empties the text field input
+    if (onClear) {
+      onClear(); // 🌟 Tells the parent component to reset search results
+    }
   };
 
   return (
@@ -28,15 +35,16 @@ export default function SearchBar({
         style={styles.inputField}
         value={value}
         onChangeText={onChangeText}
+        onSubmitEditing={onSubmit} 
         placeholder={placeholder}
         placeholderTextColor="#94A3B8"
         autoCapitalize="none"
         autoCorrect={false}
-        returnKeyType="search"
-        clearButtonMode="never" // Hidden natively so we can use our custom styled cross icon
+        returnKeyType="search" 
+        clearButtonMode="never" 
       />
 
-      {/* 🌟 Dynamic Clear Button: Only shows up when text is actively present */}
+      {/* Dynamic Clear Button */}
       {value.length > 0 && (
         <TouchableOpacity 
           onPress={handleClear} 
@@ -54,7 +62,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9', // Clean light gray pill background matching the screenshot
+    backgroundColor: '#F1F5F9', 
     borderRadius: 12,
     paddingHorizontal: 12,
     height: 46,
@@ -75,7 +83,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontWeight: '500',
     height: '100%',
-    paddingVertical: 0, // Eliminates Android default text padding issues
+    paddingVertical: 0, 
   },
   clearButton: {
     padding: 4,

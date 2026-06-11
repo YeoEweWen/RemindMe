@@ -134,14 +134,6 @@ export default function Home() {
     });
   };
 
-  const handleToggleComplete = (id: string) => {
-    setTasks(prev =>
-      prev.map(t =>
-        t.id === id ? { ...t, isCompleted: !t.isCompleted } : t
-      )
-    );
-  };
-
   return (
     <SafeAreaView style={styles.rootContainer}>
       <StatusBar style="dark" />
@@ -170,7 +162,6 @@ export default function Home() {
           <TaskCard
             task={item}
             onPressDetails={handleViewDetails}
-            onPressToggleComplete={handleToggleComplete}
           />
         )}
         style={styles.taskListScrollView}
@@ -180,7 +171,7 @@ export default function Home() {
         onRefresh={fetchTasks}
         ListEmptyComponent={
           <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No tasks found 🎉
+            No tasks found
           </Text>
         }
       />

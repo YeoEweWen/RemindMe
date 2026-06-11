@@ -24,13 +24,6 @@ export default function RootLayout() {
             headerShown: false 
           }} 
         />
-        <Stack.Screen 
-          name="edit-task" 
-          options={{ 
-            presentation: 'card', // Or use 'modal' for a clean native slide-up on iOS
-            headerShown: false 
-          }} 
-        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

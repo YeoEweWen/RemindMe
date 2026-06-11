@@ -1,52 +1,178 @@
+import ErrorScreen from '@/components/errorScreen';
 import FormButton from '@/components/formButton';
 import Header from '@/components/header';
+import LoadingScreen from '@/components/loader';
+import { TaskItem } from '@/components/taskCard';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export type PriorityLevel = 'High' | 'Medium' | 'Low';
-export type TaskStatus = 'overdue' | 'pending' | 'completed'; // 🌟 Added Status Type
-
-const getInitialDueDate = () => {
-  const timeTracker = new Date();
-  timeTracker.setHours(timeTracker.getHours() + 3);
-  return timeTracker;
-};
-
-// =========================================================================
-// 📦 FIXED CARD DATA FROM THE IMAGE
-// =========================================================================
-const FIXED_TASK_DATA = {
-  title: "Complete React Native Lab",
-  category: "💼 Work",
-  status: "overdue" as TaskStatus, // 🌟 Added dynamic status string ('overdue', 'pending', or 'completed')
-  priorityLabel: "High Priority",
-  description: "Submit finalized code files via the student portal. Include the README and project structure documentation. Double-check all components for PascalCase naming. Ensure the ActivityIndicator is implemented for loading states.",
-  dueDateStr: "Monday, June 8, 2026, 5:00 PM (Today)",
-  createdAtStr: "Friday, June 5, 2026, 5:00 PM"
-};
+export type TaskStatus = 'overdue' | 'pending' | 'completed';
 
 export default function TaskDetails() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  console.log(`Open ${id}`);
+  const router = useRouter();
 
-  // 🎨 Helper to resolve dynamic status badge styling based on value
-  const getStatusDetails = () => {
-    switch (FIXED_TASK_DATA.status) {
-      case 'completed':
-        return { label: 'Completed', bgColor: '#DCFCE7', textColor: '#16A34A' }; // Soft Green
-      case 'pending':
-        return { label: 'Pending', bgColor: '#FEF3C7', textColor: '#D97706' };   // Soft Amber
-      case 'overdue':
-      default:
-        return { label: 'Overdue', bgColor: '#FEE2E2', textColor: '#DC2626' };   // Soft Red
+  const [task, setTask] = useState<TaskItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false); 
+  const [error, setError] = useState("");
+
+  const BASE_URL = `https://6a204e32e96c1d13b58750a7.mockapi.io/api/remind-me/tasks`;
+
+  // 1. Fetch task details
+  const fetchTaskDetails = async () => {
+    if (!id) {
+      setError("No Task ID was provided.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      const response = await fetch(`${BASE_URL}/${id}`);
+      
+      if (!response.ok) {
+        throw new Error("Unable to locate task details.");
+      }
+
+      const data: TaskItem = await response.json();
+      setTask(data);
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const statusDetails = getStatusDetails();
+  useEffect(() => {
+    fetchTaskDetails();
+  }, [id]);
+
+  // 2. PUT handler to mark task as completed
+  const handleMarkAsCompleted = async () => {
+    if (!task) return;
+    try {
+      setUpdating(true);
+      const response = await fetch(`${BASE_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCompleted: true }),
+      });
+
+      if (!response.ok) throw new Error("Could not modify record status.");
+
+      Alert.alert("Task Updated! 🎉", "This item has been flagged completed.", [
+        { text: "OK", onPress: () => router.back() }
+      ]);
+    } catch (err: any) {
+      Alert.alert("Update Failure", err.message);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // 🌟 3. NEW: PUT handler to mark task as incomplete
+  const handleMarkAsIncomplete = async () => {
+    if (!task) return;
+    try {
+      setUpdating(true);
+      const response = await fetch(`${BASE_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCompleted: false }), // Resetting to false
+      });
+
+      if (!response.ok) throw new Error("Could not modify record status.");
+
+      Alert.alert("Task Reopened! ↩️", "This item has been marked as incomplete.", [
+        { text: "OK", onPress: () => router.back() }
+      ]);
+    } catch (err: any) {
+      Alert.alert("Update Failure", err.message);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // 4. DELETE handler
+  const handleDeleteTask = () => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you absolutely sure you want to drop this task card?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setUpdating(true);
+              const response = await fetch(`${BASE_URL}/${id}`, { method: 'DELETE' });
+              if (!response.ok) throw new Error("Could not eliminate item.");
+
+              Alert.alert("Destroyed", "Task record removed successfully.", [
+                { text: "OK", onPress: () => router.back() }
+              ]);
+            } catch (err: any) {
+              Alert.alert("Action Interrupted", err.message);
+            } finally {
+              setUpdating(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  // 5. Runtime status badge computation
+  const getComputedStatusDetails = () => {
+    if (!task) return { label: 'Pending', bgColor: '#FEF3C7', textColor: '#D97706', borderLeftColor: '#E2E8F0' };
+    
+    if (task.isCompleted) {
+      return { label: 'Completed', bgColor: '#DCFCE7', textColor: '#16A34A', borderLeftColor: '#16A34A' };
+    }
+
+    const now = new Date();
+    const isOverdue = task.dueAt && new Date(task.dueAt) < now;
+    if (isOverdue) {
+      return { label: 'Overdue', bgColor: '#FEE2E2', textColor: '#DC2626', borderLeftColor: '#DC2626' };
+    }
+
+    return { label: 'Pending', bgColor: '#FEF3C7', textColor: '#D97706', borderLeftColor: '#F59E0B' };
+  };
+
+  // 6. Date formatting helper
+  const formatDateTimeString = (dateInput?: string) => {
+    if (!dateInput) return "No time specified";
+    return new Date(dateInput).toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading || updating) return <LoadingScreen message={updating ? "Updating records..." : "Gathering details..."} />;
+  if (error || !task) return <ErrorScreen message={error || "Task not found."} onRetry={fetchTaskDetails} />;
+
+  const statusDetails = getComputedStatusDetails();
+
+  const getCategoryEmoji = (cat?: string) => {
+    switch (cat?.toLowerCase()) {
+      case 'work': return '💼 Work';
+      case 'study': return '🎓 Study';
+      case 'personal': return '🏠 Personal';
+      default: return `📋 ${cat || 'General'}`;
+    }
+  };
 
   return (
     <SafeAreaView style={styles.rootContainer}>
@@ -54,29 +180,26 @@ export default function TaskDetails() {
 
       <Header title="Task Details" showBackButton={true}/>
 
-      {/* 🌟 SCALABLE TASK DATA OVERVIEW CONTAINER CARD */}
-      <View style={styles.cardContainer}>
+      <View style={[styles.cardContainer, { borderLeftColor: statusDetails.borderLeftColor }]}>
         
-        {/* 🔴 Priority Tag Badge Row */}
+        {/* Priority Badge */}
         <View style={styles.badgeRow}>
-          <View style={styles.priorityBadge}>
-            <Text style={styles.priorityText}>
-              {FIXED_TASK_DATA.priorityLabel}
+          <View style={[styles.priorityBadge, { backgroundColor: task.priority?.toLowerCase() === 'high' ? '#FEE2E2' : '#E0F2FE' }]}>
+            <Text style={[styles.priorityText, { color: task.priority?.toLowerCase() === 'high' ? '#EF4444' : '#0284C7' }]}>
+              {task.priority ? `${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority` : 'Low Priority'}
             </Text>
           </View>
         </View>
 
-        {/* 📝 Title Text Header */}
-        <Text style={styles.cardTitle}>{FIXED_TASK_DATA.title}</Text>
+        {/* Title */}
+        <Text style={styles.cardTitle}>{task.title}</Text>
 
-        {/* 💼 🌟 Category & Status Inline Badge Row */}
+        {/* Category & Status Row */}
         <View style={styles.categoryBadgeRow}>
-          {/* Category Badge */}
           <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{FIXED_TASK_DATA.category}</Text>
+            <Text style={styles.categoryText}>{getCategoryEmoji(task.category)}</Text>
           </View>
 
-          {/* Status Badge */}
           <View style={[styles.statusBadge, { backgroundColor: statusDetails.bgColor }]}>
             <Text style={[styles.statusText, { color: statusDetails.textColor }]}>
               {statusDetails.label}
@@ -84,57 +207,60 @@ export default function TaskDetails() {
           </View>
         </View>
 
-        {/* 📄 Description Text Block */}
+        {/* Description Block */}
         <View style={styles.sectionBlock}>
           <Text style={styles.bodyLabel}>Description:</Text>
-          <Text style={[styles.bodyContentText, {textAlign: 'justify'}]}>{FIXED_TASK_DATA.description}</Text>
+          <Text style={[styles.bodyContentText, { textAlign: 'justify' }]}>
+            {task.description || "No description provided for this task."}
+          </Text>
         </View>
 
-        {/* 📅 Due Date Display Row */}
+        {/* Timeline Block */}
         <View style={styles.sectionBlock}>
           <Text style={styles.bodyLabel}>Due Date:</Text>
           <View style={styles.inlineDateRow}>
             <Ionicons name="time-outline" size={18} color="#64748B" style={styles.clockIcon} />
-            <Text style={styles.bodyContentText}>{FIXED_TASK_DATA.dueDateStr}</Text>
+            <Text style={styles.bodyContentText}>{formatDateTimeString(task.dueAt)}</Text>
           </View>
         </View>
 
-        {/* 🗓️ Creation Metadata Timestamp Footer */}
-        <Text style={styles.footerTimestampText}>Created: {FIXED_TASK_DATA.createdAtStr}.</Text>
+        {/* Footer Timestamp */}
+        <Text style={styles.footerTimestampText}>Created at system epoch: {formatDateTimeString(task.createdAt)}</Text>
 
       </View>
 
-      {/* Action Buttons Footer block elements */}
+      {/* Footer Action Buttons Container */}
       <View style={styles.footerActionWrapper}>
+        
+        {/* 🌟 Dynamic Primary Action Rendering: Shows "Mark As Completed" OR "Mark As Incomplete" */}
+        {task.isCompleted ? (
+          <FormButton 
+            title="Mark As Incomplete" 
+            variant="primary" // Changed to primary variant for secondary visibility/neutral tone
+            style={{ marginBottom: 10 }}
+            onPress={handleMarkAsIncomplete} 
+          />
+        ) : (
+          <FormButton 
+            title="Mark As Completed" 
+            variant="success" 
+            style={{ marginBottom: 10 }}
+            onPress={handleMarkAsCompleted} 
+          />
+        )}
+        
         <FormButton 
-          title="Mark As Completed" 
-          variant="success" 
+          title="Delete" 
+          variant="danger" 
           style={{ marginBottom: 10 }}
-          onPress={() => console.log('Mark as Completed...')} 
+          onPress={handleDeleteTask} 
         />
-        <View style={styles.buttonRow}>
-          <FormButton 
-            title="Edit" 
-            variant="primary" 
-            style={{ flex: 1 }}
-            onPress={() => console.log('Update...')} 
-          />
-          <FormButton 
-            title="Delete" 
-            variant="danger" 
-            style={{ flex: 1 }}
-            onPress={() => console.log('Delete...')} 
-          />
-        </View>
       </View>
 
     </SafeAreaView>
   );
 }
 
-// =========================================================================
-// 🎨 SCREEN STYLESHEET
-// =========================================================================
 const styles = StyleSheet.create({
   rootContainer: {
     backgroundColor: "#cae7ff",
@@ -145,7 +271,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderLeftWidth: 6, 
-    borderLeftColor: '#DC2626', 
     padding: 16,
     width: '100%',
     shadowColor: '#000000',
@@ -160,7 +285,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   priorityBadge: {
-    backgroundColor: '#FEE2E2', 
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -168,7 +292,6 @@ const styles = StyleSheet.create({
   priorityText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#EF4444',
   },
   cardTitle: {
     fontSize: 22,
@@ -181,7 +304,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-    gap: 8, // 🌟 Generates clean padding between adjacent badges
+    gap: 8, 
   },
   categoryBadge: {
     backgroundColor: '#E2E8F0', 
@@ -226,7 +349,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   footerTimestampText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#64748B',
     fontWeight: '500',
     marginTop: 4,
@@ -235,11 +358,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end', 
     marginBottom: 12,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,        
-    width: '100%',
-    marginBottom: 10,
   }
 });
