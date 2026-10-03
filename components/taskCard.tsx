@@ -97,7 +97,7 @@ export default function TaskCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f1ed09',
     borderRadius: 12,
     padding: 14,
     borderLeftWidth: 5, 

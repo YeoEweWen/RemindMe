@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
 
   btnPrimary: {
-    backgroundColor: '#1E3A8A', 
+    backgroundColor: '#5aec25', 
     shadowColor: '#1E3A8A',
     shadowOpacity: 0.12,
     shadowRadius: 4,
